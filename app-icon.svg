@@ -1,0 +1,43 @@
+svg width=512 height=512 viewBox=0 0 512 512 xmlns=httpwww.w3.org2000svg
+  !-- 背景 (可選，若要透明背景可移除此行) --
+  rect width=512 height=512 fill=#ffffff rx=100 ry=100
+  
+  !-- 左耳 --
+  circle cx=110 cy=120 r=60 fill=#1a1a1a
+  circle cx=110 cy=120 r=30 fill=white
+  
+  !-- 右耳 --
+  circle cx=402 cy=120 r=60 fill=#1a1a1a
+  circle cx=402 cy=120 r=30 fill=white
+  
+  !-- 臉型 --
+  circle cx=256 cy=270 r=210 fill=#1a1a1a
+  
+  !-- 眉毛 (左) --
+  path d=M150 180 Q200 160 230 180 stroke=white stroke-width=10 fill=none stroke-linecap=round
+  !-- 眉毛 (右) --
+  path d=M282 180 Q312 160 362 180 stroke=white stroke-width=10 fill=none stroke-linecap=round
+  
+  !-- 眼睛 (左) --
+  ellipse cx=200 cy=240 rx=35 ry=45 fill=white
+  rect x=194 y=225 width=12 height=30 rx=6 fill=#1a1a1a
+  
+  !-- 眼睛 (右) --
+  ellipse cx=312 cy=240 rx=35 ry=45 fill=white
+  rect x=306 y=225 width=12 height=30 rx=6 fill=#1a1a1a
+  
+  !-- 腮紅 (左) --
+  circle cx=110 cy=310 r=55 fill=#FF5252
+  !-- 腮紅 (右) --
+  circle cx=402 cy=310 r=55 fill=#FF5252
+  
+  !-- 鼻子嘴巴區域 (白色橢圓) --
+  ellipse cx=256 cy=350 rx=90 ry=70 fill=white
+  
+  !-- 鼻子 --
+  ellipse cx=256 cy=320 rx=15 ry=10 fill=#1a1a1a
+  
+  !-- 嘴巴 --
+  path d=M216 350 Q256 390 296 350 stroke=#1a1a1a stroke-width=8 fill=none stroke-linecap=round
+  path d=M210 345 L302 345 stroke=#1a1a1a stroke-width=2 fill=none opacity=0.1
+svg
