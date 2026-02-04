@@ -65,7 +65,7 @@
         <!-- ================= HEADER SECTION ================= -->
         <header class="relative z-10">
             <!-- Settings Button -->
-            <button @click="showSettingsModal = true" class="absolute top-4 right-4 z-30 w-10 h-10 bg-black/30 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/50 transition-colors">
+            <button @click="openSettings" class="absolute top-4 right-4 z-30 w-10 h-10 bg-black/30 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/50 transition-colors">
                 <i class="fa-solid fa-gear"></i>
             </button>
 
@@ -171,14 +171,15 @@
                 <button @click="openAddModal" class="fixed bottom-24 right-6 w-14 h-14 bg-kuma-black text-white rounded-full shadow-xl flex items-center justify-center text-2xl active:scale-90 transition-transform z-30"><i class="fa-solid fa-plus"></i></button>
             </div>
 
-            <!-- TAB 2: INFO (資訊 + 日語 + 翻譯) -->
+            <!-- TAB 2: INFO (資訊 + 日語 + 翻譯 + 自駕) -->
             <div v-else-if="currentTab === 'info'" class="space-y-6 pt-6 pb-24">
                 
                 <!-- Info Switcher -->
-                <div class="flex p-1 bg-gray-200 rounded-xl">
-                    <button @click="infoMode = 'basic'" :class="['flex-1 py-2 rounded-lg text-sm font-bold transition-all', infoMode === 'basic' ? 'bg-white shadow text-kuma-black' : 'text-gray-500']">資訊</button>
-                    <button @click="infoMode = 'phrase'" :class="['flex-1 py-2 rounded-lg text-sm font-bold transition-all', infoMode === 'phrase' ? 'bg-white shadow text-kuma-black' : 'text-gray-500']">🇯🇵日語</button>
-                    <button @click="infoMode = 'translate'" :class="['flex-1 py-2 rounded-lg text-sm font-bold transition-all', infoMode === 'translate' ? 'bg-white shadow text-kuma-black' : 'text-gray-500']">AI翻譯</button>
+                <div class="flex p-1 bg-gray-200 rounded-xl overflow-x-auto">
+                    <button @click="infoMode = 'basic'" :class="['flex-1 py-2 px-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap', infoMode === 'basic' ? 'bg-white shadow text-kuma-black' : 'text-gray-500']">資訊</button>
+                    <button @click="infoMode = 'drive'" :class="['flex-1 py-2 px-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap', infoMode === 'drive' ? 'bg-white shadow text-kuma-black' : 'text-gray-500']">🚗自駕</button>
+                    <button @click="infoMode = 'phrase'" :class="['flex-1 py-2 px-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap', infoMode === 'phrase' ? 'bg-white shadow text-kuma-black' : 'text-gray-500']">🇯🇵日語</button>
+                    <button @click="infoMode = 'translate'" :class="['flex-1 py-2 px-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap', infoMode === 'translate' ? 'bg-white shadow text-kuma-black' : 'text-gray-500']">AI翻譯</button>
                 </div>
 
                 <!-- Basic Info Content -->
@@ -205,15 +206,59 @@
                         </div>
                     </div>
 
-                    <!-- Car & Flight (Simplifed for code length, fully functional) -->
+                    <!-- Rent a Car Info -->
                     <div class="bg-white rounded-2xl p-5 shadow-card">
-                        <h2 class="text-lg font-bold mb-3 flex items-center"><i class="fa-solid fa-car text-aso-green mr-2"></i> 租車</h2>
+                        <h2 class="text-lg font-bold mb-3 flex items-center"><i class="fa-solid fa-car text-aso-green mr-2"></i> 租車資訊</h2>
                         <div class="text-sm space-y-2">
                             <div class="flex justify-between text-gray-600"><span>Toyota Rent a Car (熊本站前)</span></div>
                             <div class="bg-gray-100 p-2 rounded text-xs text-gray-600 mt-1"><i class="fa-solid fa-check text-green-500"></i> Yaris | 雪胎 | 3歲汽座</div>
-                            <button @click="openMap('Toyota Rent a Car Kumamoto Station')" class="w-full mt-2 py-2 bg-aso-green text-white rounded-lg text-sm font-bold">導航</button>
+                            <button @click="openMap('Toyota Rent a Car Kumamoto Station')" class="w-full mt-2 py-2 bg-aso-green text-white rounded-lg text-sm font-bold">導航去租車店</button>
                         </div>
                     </div>
+                </div>
+
+                <!-- Driver Mode Content (New!) -->
+                <div v-else-if="infoMode === 'drive'" class="space-y-4 animate-pulse-once">
+                    <div class="bg-white p-5 rounded-2xl shadow-card border-l-4 border-aso-green">
+                        <h2 class="font-bold text-lg mb-2 text-gray-800">🎌 日本駕駛提醒</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-center w-1/2 border-r border-gray-100">
+                                <div class="text-2xl font-bold text-red-500 mb-1"><i class="fa-solid fa-turn-up fa-rotate-270"></i> 左轉</div>
+                                <div class="text-xs text-gray-500">小彎 (靠左)</div>
+                            </div>
+                            <div class="text-center w-1/2">
+                                <div class="text-2xl font-bold text-blue-500 mb-1"><i class="fa-solid fa-turn-up fa-rotate-90"></i> 右轉</div>
+                                <div class="text-xs text-gray-500">大彎 (跨車道)</div>
+                            </div>
+                        </div>
+                        <div class="bg-red-50 text-red-600 text-xs p-2 rounded-lg">
+                            <i class="fa-solid fa-circle-exclamation mr-1"></i> 行人優先！轉彎請務必禮讓斑馬線行人。
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-gray-600 ml-1">周邊一鍵搜尋</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button @click="quickSearch('gas station')" class="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center hover:bg-gray-50 active:scale-95 transition-all h-28 border-b-4 border-orange-400">
+                            <i class="fa-solid fa-gas-pump text-3xl text-orange-500 mb-2"></i>
+                            <span class="font-bold text-gray-700">找加油站</span>
+                        </button>
+                        <button @click="quickSearch('parking lot')" class="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center hover:bg-gray-50 active:scale-95 transition-all h-28 border-b-4 border-blue-400">
+                            <i class="fa-solid fa-square-parking text-3xl text-blue-500 mb-2"></i>
+                            <span class="font-bold text-gray-700">找停車場</span>
+                        </button>
+                        <button @click="quickSearch('convenience store')" class="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center hover:bg-gray-50 active:scale-95 transition-all h-28 border-b-4 border-green-400">
+                            <i class="fa-solid fa-store text-3xl text-green-500 mb-2"></i>
+                            <span class="font-bold text-gray-700">便利商店</span>
+                        </button>
+                        <button @click="quickSearch('public toilet')" class="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center hover:bg-gray-50 active:scale-95 transition-all h-28 border-b-4 border-purple-400">
+                            <i class="fa-solid fa-restroom text-3xl text-purple-500 mb-2"></i>
+                            <span class="font-bold text-gray-700">找廁所</span>
+                        </button>
+                    </div>
+                     <button @click="quickSearch('Michi-no-Eki')" class="w-full bg-white p-4 rounded-2xl shadow-sm flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all border-b-4 border-yellow-400">
+                        <i class="fa-solid fa-mug-hot text-xl text-yellow-500 mr-2"></i>
+                        <span class="font-bold text-gray-700">搜尋道の駅 (休息站)</span>
+                    </button>
                 </div>
 
                 <!-- Japanese Phrases Content (Expanded + Audio) -->
@@ -375,16 +420,28 @@
             </div>
         </div>
 
-        <!-- Settings Modal -->
+        <!-- Settings Modal (Expanded with Backup) -->
         <div v-if="showSettingsModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl w-full max-w-sm p-5">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-5 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-xl font-bold mb-4">設定</h3>
-                <div class="mb-4">
+                <div class="mb-5">
                     <label class="text-xs font-bold text-gray-500 block mb-1">Gemini API Key</label>
                     <input v-model="userApiKey" type="password" class="w-full bg-gray-100 p-3 rounded-lg text-sm" placeholder="貼上您的 API Key">
-                    <p class="text-[10px] text-gray-400 mt-2">說明：GitHub Pages 需輸入 Key 才能使用 AI。 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-500 underline">取得 Key</a></p>
                 </div>
-                <div class="flex gap-2"><button @click="saveSettings" class="flex-1 bg-kuma-black text-white py-3 rounded-xl font-bold">儲存</button><button @click="showSettingsModal = false" class="px-4 py-3 text-gray-400">取消</button></div>
+
+                <div class="mb-5 border-t border-gray-100 pt-4">
+                    <label class="text-xs font-bold text-gray-500 block mb-2">資料備份與轉移</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="exportData" class="bg-blue-50 text-blue-600 py-2 rounded-lg text-sm font-bold border border-blue-100"><i class="fa-solid fa-file-export mr-1"></i> 匯出資料</button>
+                        <button @click="showImport = !showImport" class="bg-green-50 text-green-600 py-2 rounded-lg text-sm font-bold border border-green-100"><i class="fa-solid fa-file-import mr-1"></i> 匯入資料</button>
+                    </div>
+                    <div v-if="showImport" class="mt-2">
+                        <textarea v-model="importString" class="w-full h-20 bg-gray-50 p-2 rounded-lg text-xs border border-gray-200" placeholder="在此貼上備份代碼..."></textarea>
+                        <button @click="importData" class="w-full mt-2 bg-green-600 text-white py-2 rounded-lg text-sm font-bold">確認匯入</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-2"><button @click="saveSettings" class="flex-1 bg-kuma-black text-white py-3 rounded-xl font-bold">儲存並關閉</button></div>
             </div>
         </div>
 
@@ -493,7 +550,7 @@
             setup() {
                 const currentTab = ref('itinerary');
                 const selectedDateIndex = ref(0);
-                const infoMode = ref('basic'); // 'basic', 'phrase', 'translate'
+                const infoMode = ref('basic'); // 'basic', 'phrase', 'translate', 'drive'
                 const userApiKey = ref(localStorage.getItem('gemini_api_key') || '');
                 
                 // Modals
@@ -513,6 +570,10 @@
                 const isListening = ref(false);
                 const currentListenLang = ref('');
                 const isSpeechSupported = ref('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
+
+                // Settings & Data Management
+                const showImport = ref(false);
+                const importString = ref('');
 
                 // Data
                 const tripDates = [
@@ -688,8 +749,39 @@
                 const getCategoryIcon = (cat) => ({ food: 'fa-solid fa-utensils', transport: 'fa-solid fa-bus', shopping: 'fa-solid fa-bag-shopping', hotel: 'fa-solid fa-bed', ticket: 'fa-solid fa-ticket', other: 'fa-solid fa-circle' }[cat]);
                 const getCategoryColor = (cat) => ({ food: 'bg-orange-400', transport: 'bg-blue-400', shopping: 'bg-pink-400', hotel: 'bg-purple-400', ticket: 'bg-green-500', other: 'bg-gray-400' }[cat]);
                 const openMap = (loc) => loc && window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, '_blank');
+                const quickSearch = (keyword) => { window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword)}`, '_blank'); };
                 const saveSettings = () => { localStorage.setItem('gemini_api_key', userApiKey.value); showSettingsModal.value = false; alert('API Key 已儲存！'); };
+                const openSettings = () => { showSettingsModal.value = true; showImport.value = false; importString.value = ''; };
                 const saveToLocal = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+
+                // Export & Import Logic
+                const exportData = () => {
+                    const data = {
+                        itinerary: itineraryData.value,
+                        shopping: shoppingList.value,
+                        expenses: expenseList.value
+                    };
+                    const jsonStr = JSON.stringify(data);
+                    navigator.clipboard.writeText(jsonStr).then(() => alert('資料已複製！請傳送到新手機並使用「匯入」功能。')).catch(() => alert('複製失敗，請手動複製'));
+                };
+                
+                const importData = () => {
+                    try {
+                        const data = JSON.parse(importString.value);
+                        if(data.itinerary) itineraryData.value = data.itinerary;
+                        if(data.shopping) shoppingList.value = data.shopping;
+                        if(data.expenses) expenseList.value = data.expenses;
+                        
+                        saveToLocal('itinerary', itineraryData.value);
+                        saveToLocal('shopping', shoppingList.value);
+                        saveToLocal('expenses', expenseList.value);
+                        
+                        alert('匯入成功！');
+                        showSettingsModal.value = false;
+                    } catch(e) {
+                        alert('格式錯誤，請確認貼上的是完整的備份代碼');
+                    }
+                };
 
                 // AI & Scan
                 const askAIGuide = async () => {
@@ -748,8 +840,9 @@
                     daysUntilTrip, currencyInput, exchangeRate, calculateTWD, hotels,
                     shoppingList, showShoppingModal, formShopping, openShoppingModal, handleImageUpload, saveShoppingItem, deleteShoppingItem, isEditingShopping, editShoppingItem, selectedPresetCategory, presetShoppingItems, addPresetItem,
                     expenseList, showExpenseModal, formExpense, openExpenseModal, saveExpense, deleteExpense, totalExpenses, expensesByCategory, getCategoryIcon, getCategoryColor,
-                    askAIGuide, showAIModal, isAiLoading, aiResponse, handleReceiptScan, isScannerLoading, showSettingsModal, userApiKey, saveSettings,
-                    speak, transInput, transResult, isTranslating, handleTranslation, startListening, isListening, currentListenLang, isSpeechSupported
+                    askAIGuide, showAIModal, isAiLoading, aiResponse, handleReceiptScan, isScannerLoading, showSettingsModal, userApiKey, saveSettings, openSettings,
+                    speak, transInput, transResult, isTranslating, handleTranslation, startListening, isListening, currentListenLang, isSpeechSupported,
+                    quickSearch, exportData, importData, showImport, importString
                 };
             }
         }).mount('#app');
