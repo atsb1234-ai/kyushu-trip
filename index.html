@@ -151,7 +151,7 @@
                             <i class="fa-solid fa-hotel"></i><span class="border-b border-dashed border-gray-300 px-2">從飯店出發</span><i class="fa-solid fa-arrow-down text-[10px]"></i>
                         </div>
 
-                        <div @click="openMap(item.name)" :class="['bg-white rounded-2xl p-4 shadow-card border-l-4 relative overflow-hidden active:scale-98 transition-transform cursor-pointer', item.type === 'flight' ? 'border-aso-blue bg-blue-50' : item.type === 'food' ? 'border-orange-400' : item.type === 'shopping' ? 'border-pink-400' : 'border-aso-green']">
+                        <div @click="openMap(item.name, item.mapCode)" :class="['bg-white rounded-2xl p-4 shadow-card border-l-4 relative overflow-hidden active:scale-98 transition-transform cursor-pointer', item.type === 'flight' ? 'border-aso-blue bg-blue-50' : item.type === 'food' ? 'border-orange-400' : item.type === 'shopping' ? 'border-pink-400' : 'border-aso-green']">
                             <div class="absolute right-2 top-2 text-gray-300"><i class="fa-solid fa-grip-lines"></i></div>
                             <div v-if="item.type === 'flight'" class="flex flex-col">
                                 <div class="flex justify-between items-center mb-2"><span class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full font-bold"><i class="fa-solid fa-plane-up mr-1"></i> {{ item.name }}</span><span class="text-lg font-bold text-gray-700">{{ item.time }}</span></div>
@@ -163,6 +163,10 @@
                                 </div>
                                 <div class="flex-1">
                                     <h3 class="font-bold text-gray-800 text-lg leading-tight mb-1">{{ item.name }} <i class="fa-solid fa-location-arrow text-[10px] text-aso-blue ml-1 opacity-50"></i></h3>
+                                    <!-- Map Code Display -->
+                                    <div v-if="item.mapCode" class="flex items-center text-xs text-gray-500 mb-2 bg-gray-50 inline-block px-2 py-1 rounded border border-gray-200">
+                                        <i class="fa-solid fa-location-dot text-red-500 mr-1"></i>MapCode: <span class="font-mono font-bold ml-1">{{ item.mapCode }}</span>
+                                    </div>
                                     <div class="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
                                         <span v-if="item.hours" class="bg-gray-100 px-2 py-0.5 rounded text-gray-600"><i class="fa-regular fa-clock mr-1"></i>{{ item.hours }}</span>
                                         <span v-if="item.ticket" class="bg-yellow-50 px-2 py-0.5 rounded text-yellow-700"><i class="fa-solid fa-ticket mr-1"></i>{{ item.ticket }}</span>
@@ -320,7 +324,7 @@
                                     <div class="text-lg font-bold text-gray-800">{{ p.jp }}</div>
                                     <div class="text-xs text-gray-400 mt-1 font-mono">{{ p.ro }}</div>
                                 </div>
-                                <button @click.stop="speak(p.jp)" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-aso-blue active:bg-aso-blue active:text-white transition-colors">
+                                <button @click.stop="speak(p.jp, 'ja-JP')" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-aso-blue active:bg-aso-blue active:text-white transition-colors">
                                     <i class="fa-solid fa-volume-high"></i>
                                 </button>
                             </div>
@@ -452,7 +456,7 @@
                 <div class="text-4xl font-bold leading-relaxed bg-white text-black p-6 rounded-2xl break-words">{{ bigTextContent }}</div>
                 <div class="text-lg mt-4 text-gray-300">{{ bigTextSub }}</div>
                 
-                <button @click="speak(bigTextContent)" class="mt-6 w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg mx-auto active:scale-95 transition-transform">
+                <button @click="speak(bigTextContent, 'ja-JP')" class="mt-6 w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg mx-auto active:scale-95 transition-transform">
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
                 
@@ -467,6 +471,7 @@
                 <div class="mb-5">
                     <label class="text-xs font-bold text-gray-500 block mb-1">Gemini API Key</label>
                     <input v-model="userApiKey" type="password" class="w-full bg-gray-100 p-3 rounded-lg text-sm" placeholder="貼上您的 API Key">
+                    <div class="text-[10px] text-gray-400 mt-1">預設 Key 僅供測試，建議使用自己的 Key 以免額度不足。</div>
                 </div>
 
                 <div class="mb-5 border-t border-gray-100 pt-4">
@@ -506,6 +511,7 @@
                         <div><label class="text-xs font-bold text-gray-500">分類</label><select v-model="formItinerary.type" class="w-full bg-gray-100 p-2 rounded-lg"><option value="sight">景點</option><option value="food">美食</option><option value="shopping">購物</option><option value="hotel">住宿</option><option value="other">其他</option></select></div>
                         <div><label class="text-xs font-bold text-gray-500">時間</label><input type="time" v-model="formItinerary.time" class="w-full bg-gray-100 p-2 rounded-lg"></div>
                     </div>
+                    <div><label class="text-xs font-bold text-gray-500">Map Code (自駕導航用)</label><input v-model="formItinerary.mapCode" class="w-full bg-gray-100 p-2 rounded-lg font-mono text-sm" placeholder="例如: 29 460 384*11"></div>
                     <div><label class="text-xs font-bold text-gray-500">交通 (到此地)</label><div class="flex space-x-2 mt-1"><button @click="formItinerary.transportType = 'car'" :class="['flex-1 py-2 rounded-lg text-sm', formItinerary.transportType === 'car' ? 'bg-kuma-black text-white' : 'bg-gray-100']"><i class="fa-solid fa-car"></i></button><button @click="formItinerary.transportType = 'walk'" :class="['flex-1 py-2 rounded-lg text-sm', formItinerary.transportType === 'walk' ? 'bg-kuma-black text-white' : 'bg-gray-100']"><i class="fa-solid fa-person-walking"></i></button><button @click="formItinerary.transportType = 'public'" :class="['flex-1 py-2 rounded-lg text-sm', formItinerary.transportType === 'public' ? 'bg-kuma-black text-white' : 'bg-gray-100']"><i class="fa-solid fa-bus"></i></button></div></div>
                     <div><label class="text-xs font-bold text-gray-500">交通時間 (分)</label><input type="number" v-model="formItinerary.transportTime" class="w-full bg-gray-100 p-2 rounded-lg"></div>
                     <div v-if="formItinerary.type !== 'flight'"><label class="text-xs font-bold text-gray-500">備註</label><textarea v-model="formItinerary.memo" class="w-full bg-gray-100 p-2 rounded-lg h-20"></textarea></div>
@@ -581,12 +587,13 @@
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
         const GEMINI_MODEL = "gemini-2.5-flash-preview-09-2025";
-        // Restore API Key for iPhone/New Devices (default fallback)
-        const getApiKey = () => localStorage.getItem('gemini_api_key') || "AIzaSyCETuEdHWy-jul-p4FMDb8F0vq1gSQwZIo"; 
+        
+        // Helper to get key (always fresh from localStorage)
+        const getApiKey = () => localStorage.getItem('gemini_api_key') || ""; 
 
         const callGemini = async (prompt) => {
             const key = getApiKey();
-            if (!key) return "請點擊右上角設定圖示，輸入 API Key 才能使用喔！";
+            if (!key || key === 'AIzaSyCETuEdHWy-jul-p4FMDb8F0vq1gSQwZIo') return "請先在設定中輸入您的 Gemini API Key 才能使用 AI 功能喔！";
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -595,12 +602,12 @@
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
                 return data.candidates?.[0]?.content?.parts?.[0]?.text;
-            } catch (error) { return `錯誤：${error.message}`; }
+            } catch (error) { return `連線錯誤：${error.message} (請檢查 API Key 是否正確)`; }
         };
 
         const callGeminiVision = async (prompt, base64Image) => {
             const key = getApiKey();
-            if (!key) { alert("請輸入 API Key"); throw new Error("Missing Key"); }
+            if (!key) { alert("請先輸入 API Key"); return null; }
             try {
                 const base64Data = base64Image.split(',')[1];
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`, {
@@ -615,6 +622,16 @@
 
         createApp({
             setup() {
+                // 1. First, define the constants that are used elsewhere
+                const tabs = [{ id: 'itinerary', name: '行程', icon: 'fa-solid fa-map-location-dot' }, { id: 'info', name: '資訊', icon: 'fa-solid fa-circle-info' }, { id: 'shopping', name: '購物', icon: 'fa-solid fa-basket-shopping' }, { id: 'expenses', name: '花費', icon: 'fa-solid fa-yen-sign' }];
+                const tripDates = [
+                    { dateStr: '2025-02-10', dayOfWeek: 'Tue', dayNumber: '10' }, { dateStr: '2025-02-11', dayOfWeek: 'Wed', dayNumber: '11' },
+                    { dateStr: '2025-02-12', dayOfWeek: 'Thu', dayNumber: '12' }, { dateStr: '2025-02-13', dayOfWeek: 'Fri', dayNumber: '13' },
+                    { dateStr: '2025-02-14', dayOfWeek: 'Sat', dayNumber: '14' }, { dateStr: '2025-02-15', dayOfWeek: 'Sun', dayNumber: '15' },
+                    { dateStr: '2025-02-16', dayOfWeek: 'Mon', dayNumber: '16' }, { dateStr: '2025-02-17', dayOfWeek: 'Tue', dayNumber: '17' }
+                ];
+
+                // 2. Define basic refs
                 const currentTab = ref('itinerary');
                 const selectedDateIndex = ref(0);
                 const infoMode = ref('basic'); // 'basic', 'phrase', 'translate', 'drive', 'voucher'
@@ -645,35 +662,32 @@
                 // Settings & Data Management
                 const showImport = ref(false);
                 const importString = ref('');
-
-                // Data
-                const tripDates = [
-                    { dateStr: '2025-02-10', dayOfWeek: 'Tue', dayNumber: '10' }, { dateStr: '2025-02-11', dayOfWeek: 'Wed', dayNumber: '11' },
-                    { dateStr: '2025-02-12', dayOfWeek: 'Thu', dayNumber: '12' }, { dateStr: '2025-02-13', dayOfWeek: 'Fri', dayNumber: '13' },
-                    { dateStr: '2025-02-14', dayOfWeek: 'Sat', dayNumber: '14' }, { dateStr: '2025-02-15', dayOfWeek: 'Sun', dayNumber: '15' },
-                    { dateStr: '2025-02-16', dayOfWeek: 'Mon', dayNumber: '16' }, { dateStr: '2025-02-17', dayOfWeek: 'Tue', dayNumber: '17' }
-                ];
                 
-                // Updated Hotels Data Structure
+                // 3. Define data objects
+                // Hotels Data
                 const defaultHotels = [
                     { id: 1, name: 'ONE STATION HOTEL KUMAMOTO', checkIn: '2026-02-10', checkOut: '2026-02-11', platform: 'Agoda', bookingId: '6490683880', roomType: 'Economy Double Room', guest: 'kuan-chang chen' },
                     { id: 2, name: '別府龜之井飯店 (KAMENOI HOTEL BEPPU)', checkIn: '2026-02-11', checkOut: '2026-02-13', platform: 'KKday', bookingId: '26KK205750806', roomType: '豪華雙床房無煙', guest: 'kuan-chang chen' },
                     { id: 3, name: '龜之井酒店 阿蘇 公園度假村', checkIn: '2026-02-13', checkOut: '2026-02-15', platform: 'KKday', bookingId: '26KK202750556', roomType: '日式客房A(本館)', guest: 'kuan-chang chen' },
                     { id: 4, name: 'CANDEO HOTELS熊本新市街', checkIn: '2026-02-15', checkOut: '2026-02-17', platform: 'KKday', bookingId: '26KK200850826', roomType: '特大房 - 禁菸', guest: 'kuan-chang chen' }
                 ];
-                
                 const hotels = ref(JSON.parse(localStorage.getItem('hotels')) || defaultHotels);
 
+                // Itinerary with Map Code
                 const defaultItinerary = {
                     '2025-02-10': [{ id: 1, type: 'flight', name: 'IT766 抵達熊本', time: '11:50', memo: '08:45 KHH 出發', transportType: 'plane' }, { id: 2, type: 'hotel', name: 'ONE STATION Check-in', time: '13:30', memo: '飯店入住', transportType: 'public', transportTime: 40 }, { id: 3, type: 'shopping', name: '下通商店街', time: '14:30', memo: '採買備品', transportType: 'walk', transportTime: 10 }, { id: 4, type: 'sight', name: '熊本熊廣場', time: '16:00', memo: '看表演', transportType: 'walk', transportTime: 10 }, { id: 5, type: 'food', name: '車站商場餐廳', time: '18:30', memo: '晚餐', transportType: 'public', transportTime: 15 }],
-                    '2025-02-11': [{ id: 6, type: 'other', name: '熊本取車', time: '09:00', memo: '熊本站前店 (Toyota)', transportType: 'walk', transportTime: 10 }, { id: 7, type: 'sight', name: '別府地獄巡禮', time: '12:30', memo: '海地獄、鬼山地獄', transportType: 'car', transportTime: 150 }, { id: 8, type: 'food', name: '鐵輪溫泉地獄蒸', time: '13:30', memo: '推薦：茶寮大路', transportType: 'walk', transportTime: 5 }, { id: 9, type: 'hotel', name: '別府龜之井', time: '16:00', memo: 'Check-in', transportType: 'car', transportTime: 15 }],
-                    '2025-02-12': [{ id: 10, type: 'sight', name: '九州野生動物園', time: '09:30', memo: '15:00 叢林巴士(已預約)', transportType: 'car', transportTime: 30 }, { id: 11, type: 'food', name: '別府冷麵', time: '12:30', memo: '午餐', transportType: 'car', transportTime: 20 }, { id: 12, type: 'sight', name: '大分水族館', time: '14:30', memo: '海之卵', transportType: 'car', transportTime: 20 }],
-                    '2025-02-13': [{ id: 13, type: 'sight', name: '卡德利動物園', time: '10:30', memo: '09:45 嘗試預約直升機', transportType: 'car', transportTime: 60 }, { id: 14, type: 'sight', name: '阿蘇神社', time: '14:00', memo: '水基巡禮', transportType: 'car', transportTime: 15 }, { id: 15, type: 'hotel', name: '阿蘇龜之井', time: '16:00', memo: 'Check-in', transportType: 'car', transportTime: 20 }],
-                    '2025-02-14': [{ id: 16, type: 'sight', name: '草千里', time: '09:30', memo: '雪地玩耍(需雪胎)', transportType: 'car', transportTime: 30 }, { id: 17, type: 'sight', name: '阿蘇火山博物館', time: '11:00', memo: '替代方案', transportType: 'car', transportTime: 5 }, { id: 18, type: 'food', name: 'いまきん食堂', time: '12:30', memo: '赤牛丼', transportType: 'car', transportTime: 20 }, { id: 19, type: 'sight', name: '大觀峰', time: '14:30', memo: '俯瞰阿蘇五岳', transportType: 'car', transportTime: 20 }, { id: 20, type: 'other', name: '前往高千穗', time: '16:00', memo: '車程約1小時', transportType: 'car', transportTime: 60 }],
-                    '2025-02-15': [{ id: 21, type: 'food', name: '千穗之家', time: '11:30', memo: '流水麵', transportType: 'car', transportTime: 10 }, { id: 22, type: 'sight', name: '高千穗峽划船', time: '13:30', memo: '需搶票', transportType: 'walk', transportTime: 10 }, { id: 23, type: 'sight', name: '天安河原', time: '15:30', memo: '疊石許願', transportType: 'car', transportTime: 15 }, { id: 24, type: 'other', name: '熊本站還車', time: '18:00', memo: 'Toyota還車', transportType: 'car', transportTime: 120 }, { id: 25, type: 'hotel', name: 'CANDEO HOTEL', time: '19:00', memo: 'Check-in', transportType: 'public', transportTime: 20 }],
-                    '2025-02-16': [{ id: 26, type: 'sight', name: '熊本城', time: '09:30', memo: '參觀', transportType: 'public', transportTime: 15 }, { id: 27, type: 'sight', name: '櫻之馬場', time: '11:30', memo: '城彩苑', transportType: 'walk', transportTime: 10 }, { id: 28, type: 'food', name: '勝烈亭豬排', time: '13:00', memo: '午餐', transportType: 'walk', transportTime: 15 }, { id: 29, type: 'shopping', name: '市區藥妝', time: '15:00', memo: '採買', transportType: 'walk', transportTime: 10 }, { id: 30, type: 'food', name: '熊本黑亭拉麵', time: '18:00', memo: '晚餐', transportType: 'walk', transportTime: 10 }],
+                    '2025-02-11': [{ id: 6, type: 'other', name: '熊本取車', time: '09:00', memo: '熊本站前店 (Toyota)', transportType: 'walk', transportTime: 10 }, { id: 7, type: 'sight', name: '別府地獄巡禮', mapCode: '46 522 467*63', time: '12:30', memo: '海地獄、鬼山地獄', transportType: 'car', transportTime: 150 }, { id: 8, type: 'food', name: '鐵輪溫泉地獄蒸', mapCode: '46 522 263*12', time: '13:30', memo: '推薦：茶寮大路', transportType: 'walk', transportTime: 5 }, { id: 9, type: 'hotel', name: '別府龜之井', mapCode: '46 493 574*88', time: '16:00', memo: 'Check-in', transportType: 'car', transportTime: 15 }],
+                    '2025-02-12': [{ id: 10, type: 'sight', name: '九州野生動物園', mapCode: '46 438 832*25', time: '09:30', memo: '15:00 叢林巴士(已預約)', transportType: 'car', transportTime: 30 }, { id: 11, type: 'food', name: '別府冷麵', time: '12:30', memo: '午餐', transportType: 'car', transportTime: 20 }, { id: 12, type: 'sight', name: '大分水族館', mapCode: '46 397 737*14', time: '14:30', memo: '海之卵', transportType: 'car', transportTime: 20 }],
+                    '2025-02-13': [{ id: 13, type: 'sight', name: '卡德利動物園', mapCode: '256 512 858*13', time: '10:30', memo: '09:45 嘗試預約直升機', transportType: 'car', transportTime: 60 }, { id: 14, type: 'sight', name: '阿蘇神社', mapCode: '256 697 107*74', time: '14:00', memo: '水基巡禮', transportType: 'car', transportTime: 15 }, { id: 15, type: 'hotel', name: '阿蘇龜之井', mapCode: '256 455 706*55', time: '16:00', memo: 'Check-in', transportType: 'car', transportTime: 20 }],
+                    '2025-02-14': [{ id: 16, type: 'sight', name: '草千里', mapCode: '256 456 833*88', time: '09:30', memo: '雪地玩耍(需雪胎)', transportType: 'car', transportTime: 30 }, { id: 17, type: 'sight', name: '阿蘇火山博物館', mapCode: '256 456 771*82', time: '11:00', memo: '替代方案', transportType: 'car', transportTime: 5 }, { id: 18, type: 'food', name: 'いまきん食堂', mapCode: '256 663 351*32', time: '12:30', memo: '赤牛丼', transportType: 'car', transportTime: 20 }, { id: 19, type: 'sight', name: '大觀峰', mapCode: '256 878 351*72', time: '14:30', memo: '俯瞰阿蘇五岳', transportType: 'car', transportTime: 20 }, { id: 20, type: 'other', name: '前往高千穗', time: '16:00', memo: '車程約1小時', transportType: 'car', transportTime: 60 }],
+                    '2025-02-15': [{ id: 21, type: 'food', name: '千穗之家', mapCode: '330 711 730*22', time: '11:30', memo: '流水麵', transportType: 'car', transportTime: 10 }, { id: 22, type: 'sight', name: '高千穗峽划船', mapCode: '330 711 672*66', time: '13:30', memo: '需搶票', transportType: 'walk', transportTime: 10 }, { id: 23, type: 'sight', name: '天安河原', mapCode: '330 742 163*88', time: '15:30', memo: '疊石許願', transportType: 'car', transportTime: 15 }, { id: 24, type: 'other', name: '熊本站還車', time: '18:00', memo: 'Toyota還車', transportType: 'car', transportTime: 120 }, { id: 25, type: 'hotel', name: 'CANDEO HOTEL', time: '19:00', memo: 'Check-in', transportType: 'public', transportTime: 20 }],
+                    '2025-02-16': [{ id: 26, type: 'sight', name: '熊本城', mapCode: '29 460 384*11', time: '09:30', memo: '參觀', transportType: 'public', transportTime: 15 }, { id: 27, type: 'sight', name: '櫻之馬場', time: '11:30', memo: '城彩苑', transportType: 'walk', transportTime: 10 }, { id: 28, type: 'food', name: '勝烈亭豬排', time: '13:00', memo: '午餐', transportType: 'walk', transportTime: 15 }, { id: 29, type: 'shopping', name: '市區藥妝', time: '15:00', memo: '採買', transportType: 'walk', transportTime: 10 }, { id: 30, type: 'food', name: '熊本黑亭拉麵', time: '18:00', memo: '晚餐', transportType: 'walk', transportTime: 10 }],
                     '2025-02-17': [{ id: 31, type: 'sight', name: '坪井川綠地公園', time: '10:00', memo: '遊具放電', transportType: 'public', transportTime: 30 }, { id: 32, type: 'flight', name: '前往機場', time: '15:30', memo: '17:50 前抵達', transportType: 'public', transportTime: 60 }, { id: 33, type: 'flight', name: 'IT767 返台', time: '19:50', memo: '21:45 抵達 KHH', transportType: 'plane' }]
                 };
+
+                const itineraryData = ref(JSON.parse(localStorage.getItem('itinerary')) || defaultItinerary);
+                const shoppingList = ref(JSON.parse(localStorage.getItem('shopping')) || []);
+                const expenseList = ref(JSON.parse(localStorage.getItem('expenses')) || []);
 
                 const phraseData = [
                     { cat: '基本', zh: '你好 / 早安', jp: 'こんにちは / おはよう', ro: 'Konnichiwa / Ohayo' },
@@ -701,10 +715,6 @@
                     { cat: '緊急', zh: '我不舒服', jp: '気分が悪いです', ro: 'Kibun ga warui desu' },
                     { cat: '緊急', zh: '請幫幫我', jp: '助けてください', ro: 'Tasukete kudasai' },
                 ];
-
-                const itineraryData = ref(JSON.parse(localStorage.getItem('itinerary')) || defaultItinerary);
-                const shoppingList = ref(JSON.parse(localStorage.getItem('shopping')) || []);
-                const expenseList = ref(JSON.parse(localStorage.getItem('expenses')) || []);
 
                 // Forms
                 const formItinerary = ref({});
@@ -735,16 +745,17 @@
                 const filteredPhrases = computed(() => phraseData.filter(p => p.cat === selectedPhraseCat.value));
                 const showBigText = (p) => { bigTextContent.value = p.jp; bigTextSub.value = p.ro; showBigTextModal.value = true; };
                 
-                // Pronunciation Logic
-                const speak = (text) => {
+                // Pronunciation Logic (Fixed for iOS)
+                const speak = (text, forcedLang = null) => {
                     if ('speechSynthesis' in window) {
                         const utterance = new SpeechSynthesisUtterance(text);
-                        // Simple detection: if mostly ascii/chinese -> zh-TW, if kana/kanji -> ja-JP
-                        // For simplicity in this specific app context:
-                        // phrases are mostly Japanese. Translation results vary.
-                        // Let's guess language based on characters
-                        const hasJapanese = /[\u3040-\u30ff]/.test(text);
-                        utterance.lang = hasJapanese ? 'ja-JP' : 'zh-TW';
+                        // Force language if provided, otherwise guess
+                        if (forcedLang) {
+                            utterance.lang = forcedLang;
+                        } else {
+                            const hasJapanese = /[\u3040-\u30ff]/.test(text);
+                            utterance.lang = hasJapanese ? 'ja-JP' : 'zh-TW';
+                        }
                         utterance.rate = 0.9;
                         window.speechSynthesis.speak(utterance);
                     } else {
@@ -752,85 +763,40 @@
                     }
                 };
 
-                // Translator Logic
-                const handleTranslation = async () => {
-                    if (!transInput.value) return;
-                    isTranslating.value = true;
-                    transResult.value = '';
-                    try {
-                        const prompt = `Translate the following text. If it is Chinese, translate to Japanese. If it is Japanese, translate to Traditional Chinese. Text: "${transInput.value}". Return ONLY the translated text.`;
-                        const result = await callGemini(prompt);
-                        transResult.value = result.trim();
-                    } catch (e) {
-                        alert("翻譯失敗，請檢查 API Key 或網路");
-                    } finally {
-                        isTranslating.value = false;
-                    }
+                const saveSettings = () => { 
+                    localStorage.setItem('gemini_api_key', userApiKey.value); 
+                    showSettingsModal.value = false; 
+                    alert('API Key 已儲存！請嘗試使用 AI 功能。'); 
                 };
-
-                // Speech Recognition Logic
-                const startListening = (lang) => {
-                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                        alert("您的瀏覽器不支援語音辨識功能");
-                        return;
-                    }
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    const recognition = new SpeechRecognition();
-                    recognition.lang = lang;
-                    recognition.interimResults = false;
-                    recognition.maxAlternatives = 1;
-
-                    isListening.value = true;
-                    currentListenLang.value = lang;
-
-                    recognition.onresult = (event) => {
-                        const transcript = event.results[0][0].transcript;
-                        transInput.value = transcript;
-                        // Auto trigger translation for seamless conversation
-                        handleTranslation(); 
-                    };
-
-                    recognition.onerror = (event) => {
-                        console.error(event.error);
-                        isListening.value = false;
-                        currentListenLang.value = '';
-                        // alert("語音辨識失敗，請重試");
-                    };
-
-                    recognition.onend = () => {
-                        isListening.value = false;
-                        currentListenLang.value = '';
-                    };
-
-                    recognition.start();
-                };
-
-                // Countdown Logic
-                const daysUntilTrip = computed(() => {
-                    const today = new Date();
-                    const tripStart = new Date('2025-02-10');
-                    const diffTime = tripStart - today;
-                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                });
-
-                // Computed Basics
-                const tabs = [{ id: 'itinerary', name: '行程', icon: 'fa-solid fa-map-location-dot' }, { id: 'info', name: '資訊', icon: 'fa-solid fa-circle-info' }, { id: 'shopping', name: '購物', icon: 'fa-solid fa-basket-shopping' }, { id: 'expenses', name: '花費', icon: 'fa-solid fa-yen-sign' }];
-                const currentDateStr = computed(() => tripDates[selectedDateIndex.value].dateStr);
-                const currentDayItinerary = computed(() => (itineraryData.value[currentDateStr.value] || []).sort((a, b) => a.time.localeCompare(b.time)));
-                const exchangeRate = 0.2;
-                const calculateTWD = computed(() => currencyInput.value ? Math.round(currencyInput.value * exchangeRate) : 0);
-                const totalExpenses = computed(() => expenseList.value.reduce((sum, item) => sum + parseInt(item.amount || 0), 0));
-                const expensesByCategory = computed(() => { const cats = { food: 0, shopping: 0, transport: 0 }; expenseList.value.forEach(item => { if (cats[item.category] !== undefined) cats[item.category] += parseInt(item.amount); }); return cats; });
 
                 // Methods
                 const mockWeather = (idx) => { const w = [{ temp: 8, feelsLike: 5, icon: 'fa-solid fa-cloud-sun', desc: '多雲' }, { temp: 6, feelsLike: 3, icon: 'fa-solid fa-cloud-rain', desc: '小雨' }, { temp: 4, feelsLike: 0, icon: 'fa-solid fa-wind', desc: '強風' }, { temp: 2, feelsLike: -2, icon: 'fa-regular fa-snowflake', desc: '降雪' }, { temp: 0, feelsLike: -4, icon: 'fa-regular fa-snowflake', desc: '大雪' }, { temp: 5, feelsLike: 3, icon: 'fa-solid fa-sun', desc: '晴朗' }, { temp: 9, feelsLike: 7, icon: 'fa-solid fa-cloud', desc: '陰天' }, { temp: 11, feelsLike: 9, icon: 'fa-solid fa-sun', desc: '晴朗' }]; return w[idx] || w[0]; };
                 const getTransportIcon = (type) => ({ car: 'fa-solid fa-car', walk: 'fa-solid fa-person-walking', public: 'fa-solid fa-bus', plane: 'fa-solid fa-plane' }[type] || 'fa-solid fa-shoe-prints');
                 const getCategoryIcon = (cat) => ({ food: 'fa-solid fa-utensils', transport: 'fa-solid fa-bus', shopping: 'fa-solid fa-bag-shopping', hotel: 'fa-solid fa-bed', ticket: 'fa-solid fa-ticket', other: 'fa-solid fa-circle' }[cat]);
                 const getCategoryColor = (cat) => ({ food: 'bg-orange-400', transport: 'bg-blue-400', shopping: 'bg-pink-400', hotel: 'bg-purple-400', ticket: 'bg-green-500', other: 'bg-gray-400' }[cat]);
-                const openMap = (loc) => loc && window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, '_blank');
+                
+                // Fixed One Station Hotel Map Query
+                const openMap = (loc, mapCode) => { 
+                    if (!loc) return;
+                    let query = loc;
+                    // Fix for One Station Hotel
+                    if (loc.includes('ONE STATION')) {
+                        query = "熊本市西区春日1-13-1";
+                    }
+                    if (mapCode) {
+                         // Copy map code to clipboard as a convenience for car navi
+                         navigator.clipboard.writeText(mapCode).then(() => {
+                             alert(`已複製 MapCode: ${mapCode} (可貼上至導航 App 或車機)`);
+                         });
+                         // Open google maps with location name
+                         window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
+                    } else {
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
+                    }
+                };
+                
                 const quickSearch = (keyword) => { window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword)}`, '_blank'); };
                 const copyText = (text) => { navigator.clipboard.writeText(text).then(() => alert('已複製: ' + text)).catch(err => console.error('Copy failed', err)); };
-                const saveSettings = () => { localStorage.setItem('gemini_api_key', userApiKey.value); showSettingsModal.value = false; alert('API Key 已儲存！'); };
                 const openSettings = () => { showSettingsModal.value = true; showImport.value = false; importString.value = ''; };
                 const saveToLocal = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 
@@ -864,34 +830,6 @@
                     } catch(e) {
                         alert('格式錯誤，請確認貼上的是完整的備份代碼');
                     }
-                };
-
-                // AI & Scan
-                const askAIGuide = async () => {
-                    showAIModal.value = true; isAiLoading.value = true;
-                    const text = currentDayItinerary.value.map(i => `${i.time} ${i.name}`).join(', ');
-                    const res = await callGemini(`我是九州導遊。日期:${currentDateStr.value}。行程:${text}。請給3個短建議(美食/提醒/心情)，繁中，熊本熊語氣。`);
-                    aiResponse.value = marked.parse(res); isAiLoading.value = false;
-                };
-                const handleReceiptScan = async (e) => {
-                    const file = e.target.files[0]; if (!file) return;
-                    isScannerLoading.value = true;
-                    const reader = new FileReader();
-                    reader.onload = async (e) => {
-                        const res = await callGeminiVision(`分析收據，回傳JSON:{name, amount(數字), category(food/shopping/transport/hotel/ticket/other), date(YYYY-MM-DD)}`, e.target.result);
-                        if(res) { 
-                            try {
-                                const cleanJson = res.replace(/```json|```/g, '').trim();
-                                const data = JSON.parse(cleanJson); 
-                                formExpense.value = { ...formExpense.value, ...data, category: data.category || 'other' }; 
-                            } catch(e) {
-                                console.error("Parse error", e);
-                                alert("AI 回傳格式無法解析，請手動輸入");
-                            }
-                        }
-                        isScannerLoading.value = false; e.target.value = '';
-                    };
-                    reader.readAsDataURL(file);
                 };
 
                 // Hotel CRUD Logic (Updated for Voucher)
@@ -945,6 +883,105 @@
                 const saveExpense = () => { if(!formExpense.value.amount) return; expenseList.value.unshift({ ...formExpense.value }); saveToLocal('expenses', expenseList.value); showExpenseModal.value = false; };
                 const deleteExpense = (idx) => { if(confirm('刪除？')) { expenseList.value.splice(idx, 1); saveToLocal('expenses', expenseList.value); } };
 
+                // 4. Computed properties that depend on refs and constants
+                const daysUntilTrip = computed(() => {
+                    const today = new Date();
+                    const tripStart = new Date('2025-02-10');
+                    const diffTime = tripStart - today;
+                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                });
+                
+                const currentDateStr = computed(() => tripDates[selectedDateIndex.value].dateStr);
+                
+                const currentDayItinerary = computed(() => (itineraryData.value[currentDateStr.value] || []).sort((a, b) => a.time.localeCompare(b.time)));
+                
+                const exchangeRate = 0.2;
+                const calculateTWD = computed(() => currencyInput.value ? Math.round(currencyInput.value * exchangeRate) : 0);
+                
+                const totalExpenses = computed(() => expenseList.value.reduce((sum, item) => sum + parseInt(item.amount || 0), 0));
+                
+                const expensesByCategory = computed(() => { const cats = { food: 0, shopping: 0, transport: 0 }; expenseList.value.forEach(item => { if (cats[item.category] !== undefined) cats[item.category] += parseInt(item.amount); }); return cats; });
+
+
+                // AI & Scan (placed here to use refs)
+                const askAIGuide = async () => {
+                    showAIModal.value = true; isAiLoading.value = true;
+                    const text = currentDayItinerary.value.map(i => `${i.time} ${i.name}`).join(', ');
+                    const res = await callGemini(`我是九州導遊。日期:${currentDateStr.value}。行程:${text}。請給3個短建議(美食/提醒/心情)，繁中，熊本熊語氣。`);
+                    aiResponse.value = marked.parse(res); isAiLoading.value = false;
+                };
+                
+                const handleReceiptScan = async (e) => {
+                    const file = e.target.files[0]; if (!file) return;
+                    isScannerLoading.value = true;
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        const res = await callGeminiVision(`分析收據，回傳JSON:{name, amount(數字), category(food/shopping/transport/hotel/ticket/other), date(YYYY-MM-DD)}`, e.target.result);
+                        if(res) { 
+                            try {
+                                const cleanJson = res.replace(/```json|```/g, '').trim();
+                                const data = JSON.parse(cleanJson); 
+                                formExpense.value = { ...formExpense.value, ...data, category: data.category || 'other' }; 
+                            } catch(e) {
+                                console.error("Parse error", e);
+                                alert("AI 回傳格式無法解析，請手動輸入");
+                            }
+                        }
+                        isScannerLoading.value = false; e.target.value = '';
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                const startListening = (lang) => {
+                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                        alert("您的瀏覽器不支援語音辨識功能");
+                        return;
+                    }
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = lang;
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
+
+                    isListening.value = true;
+                    currentListenLang.value = lang;
+
+                    recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        transInput.value = transcript;
+                        // Auto trigger translation for seamless conversation
+                        handleTranslation(); 
+                    };
+
+                    recognition.onerror = (event) => {
+                        console.error(event.error);
+                        isListening.value = false;
+                        currentListenLang.value = '';
+                    };
+
+                    recognition.onend = () => {
+                        isListening.value = false;
+                        currentListenLang.value = '';
+                    };
+
+                    recognition.start();
+                };
+
+                const handleTranslation = async () => {
+                    if (!transInput.value) return;
+                    isTranslating.value = true;
+                    transResult.value = '';
+                    try {
+                        const prompt = `Translate the following text. If it is Chinese, translate to Japanese. If it is Japanese, translate to Traditional Chinese. Text: "${transInput.value}". Return ONLY the translated text.`;
+                        const result = await callGemini(prompt);
+                        transResult.value = result.trim();
+                    } catch (e) {
+                        alert("翻譯失敗，請檢查 API Key 或網路");
+                    } finally {
+                        isTranslating.value = false;
+                    }
+                };
+
                 return {
                     currentTab, tabs, tripDates, selectedDateIndex, currentDateStr, currentDayItinerary, mockWeather, getTransportIcon, openMap,
                     showItineraryModal, isEditing, formItinerary, openAddModal, editItem, saveItinerary, confirmDeleteItinerary,
@@ -962,4 +999,3 @@
     </script>
 </body>
 </html>
-
