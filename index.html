@@ -71,7 +71,7 @@
         <!-- ================= HEADER SECTION ================= -->
         <header class="relative z-10">
             <!-- Settings Button -->
-            <button @click="openSettings" class="absolute top-4 right-4 z-30 w-10 h-10 bg-black/30 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-black/50 transition-colors">
+            <button @click="openSettings" :class="['absolute top-4 right-4 z-30 w-10 h-10 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors', hasApiKey ? 'bg-black/30 text-white hover:bg-black/50' : 'bg-red-500 text-white animate-pulse']">
                 <i class="fa-solid fa-gear"></i>
             </button>
 
@@ -485,6 +485,7 @@
                 <div class="mb-5">
                     <label class="text-xs font-bold text-gray-500 block mb-1">Gemini API Key</label>
                     <input v-model="userApiKey" type="password" class="w-full bg-gray-100 p-3 rounded-lg text-sm" placeholder="貼上您的 API Key">
+                    <div v-if="!userApiKey" class="text-xs text-red-500 font-bold mt-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i>請輸入 Key 才能使用 AI 功能</div>
                     <div class="text-[10px] text-gray-400 mt-1">
                         若無法使用，請確認 Key 額度。<a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-500 underline">前往 Google AI Studio 取得 Key</a>
                     </div>
@@ -639,7 +640,7 @@
                 const currentTab = ref('itinerary');
                 const selectedDateIndex = ref(0);
                 const infoMode = ref('basic'); // 'basic', 'phrase', 'translate', 'drive', 'voucher'
-                const userApiKey = ref(localStorage.getItem('gemini_api_key') || 'AIzaSyB9zicwRb2SFnRq_VoDvJTaQQrM3uJ66JI');
+                const userApiKey = ref(localStorage.getItem('gemini_api_key') || '');
                 
                 // Modals
                 const showItineraryModal = ref(false);
@@ -983,6 +984,9 @@
                 const totalExpenses = computed(() => expenseList.value.reduce((sum, item) => sum + parseInt(item.amount || 0), 0));
                 
                 const expensesByCategory = computed(() => { const cats = { food: 0, shopping: 0, transport: 0 }; expenseList.value.forEach(item => { if (cats[item.category] !== undefined) cats[item.category] += parseInt(item.amount); }); return cats; });
+                
+                // Add computed property for API key presence
+                const hasApiKey = computed(() => !!userApiKey.value);
 
 
                 // AI & Scan (placed here to use refs)
@@ -1075,7 +1079,7 @@
                     speak, transInput, transResult, isTranslating, handleTranslation, startListening, isListening, currentListenLang, isSpeechSupported,
                     quickSearch, exportData, importData, showImport, importString,
                     showHotelModal, isEditingHotel, formHotel, openHotelModal, editHotel, saveHotel, deleteHotel, copyText,
-                    addToPhrases, deletePhrase
+                    addToPhrases, deletePhrase, hasApiKey
                 };
             }
         }).mount('#app');
